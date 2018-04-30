@@ -94,6 +94,7 @@ INSTALLED_APPS += (
     'mapstory.apps.teams',
     'mapstory.apps.organizations',
     'mapstory.apps.initiatives',
+    'mapstory.apps.opensensorhub', # OSH_INTEG: Declare OpenSensorHub as an App
     'mapstory.mapstory_profile',
     'mapstory.mapstories',
     'health_check',
@@ -130,6 +131,7 @@ TEMPLATES = [
             os.path.join(os.path.dirname(geonode.__file__), 'templates'),
             os.path.join('deps/story-tools-composer', 'partials'),
             os.path.join(LOCAL_ROOT, 'apps/initiatives'),
+            os.path.join(LOCAL_ROOT, 'apps/opensensorhub'),	# OSH_INTEG: Identify the templates to use for OpenSensorHub integrations
         ],
         'APP_DIRS': True,
         'OPTIONS': {

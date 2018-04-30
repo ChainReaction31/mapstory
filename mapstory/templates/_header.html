@@ -31,6 +31,12 @@
                                 <a class="pointer" ng-controller="createLayerCtrl"
                                    ng-click="open('{{ STATIC_URL }}mapstory/partials/createLayerModal.html', '/uploaded/{{ site.assets.logo.name }}', '{{ STATIC_URL }}')">{% trans "Create StoryLayer" %}</a>
                             </li>
+<!-- OSH_INTEG - BEGIN -->
+                            <li>
+                                <a class="pointer" ng-controller="createSensorLayerCtrl"
+                                   ng-click="open('{{ STATIC_URL }}mapstory/partials/createSensorLayerModal.html', '/uploaded/{{ site.assets.logo.name }}', '{{ STATIC_URL }}mapstory/partials/')">{% trans "Create SensorLayer" %}</a>
+                            </li>
+<!-- OSH_INTEG - END -->
                             <li>
                                 <a href="{% url 'upload' %}">{% trans "Upload Icons" %}</a>
                             </li>
@@ -40,6 +46,9 @@
                         {% else %}
                             <li><a href="#" data-toggle="modal" data-target="#loginModal">{% trans "Import StoryLayer" %}</a></li>
                             <li><a href="#" data-toggle="modal" data-target="#loginModal">{% trans "Create StoryLayer" %}</a></li>
+<!-- OSH_INTEG - BEGIN -->
+                            <li><a href="#" data-toggle="modal" data-target="#loginModal">{% trans "Create SensorLayer" %}</a></li>
+<!-- OSH_INTEG - END -->
                             <li><a href="#" data-toggle="modal" data-target="#loginModal">{% trans "Upload Icons" %}</a></li>
                             <li><a href="#" data-toggle="modal" data-target="#loginModal">{% trans "Compose Story" %}</a></li>
                         {% endif %}

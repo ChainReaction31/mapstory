@@ -1,0 +1,137 @@
+<!-- OSH_INTEG - BEGIN -->
+<div class="modal-header">
+    <h3 class="modal-title">Create a new SensorLayer<img class="import-wizard-icon" ng-src="{{ modalImage }}"/></h3>
+</div>
+<div class="modal-body row">
+    <div class="col-sm-12 col-md-12 col-lg-12 import-wizard-modal">
+        <wizard on-finish="createSensorLayer()">
+
+            <wz-step title="Name" canexit="nameValid">
+                <h3><strong>Name your SensorLayer</strong></h3>
+                <p>Descriptive layer names make it easy for others to find your data.</p>
+                <form name="importOptionsForm" class="form-horizontal import-options-form">
+                    <div class="form-group">
+                        <input id="layerName" placeholder="My SensorLayer" type="text" class=input-lg ng-model="layer.configuration_options.name">
+                    </div>
+
+                    <div class="import-wizard-button">
+                        <button class="btn" type="submit" wz-next value="Continue">Continue <i class="fa fa-arrow-circle-right"></i></button>
+                    </div>
+                </form>
+            </wz-step>
+
+            <wz-step title="Hub" canexit="hubValid">
+                <h3><strong>Specify Sensor Hub</strong></h3>
+                <p>Next, specify the URL of the hub you want to use.</p>
+                <form name="importOptionsForm" class="form-horizontal import-options-form">
+                    <div class="form-group">
+                        <input id="osh_address" placeholder="http://sensiasoft.com:8181/sensorhub" type="text" class="input-lg" ng-model="layer.hub.url">
+                    </div>
+
+                    <div class="import-wizard-button">
+                        <button class="btn" type="submit" wz-next value="Continue" ng-click="getHubOfferings()">Continue <i class="fa fa-arrow-circle-right"></i></button>
+                    </div>
+                </form>
+            </wz-step>
+
+            <wz-step title="Sensors">
+                <h3><strong>Select the Sensors</strong></h3>
+                <p>Next, specify the sensors and sensor proerties you would like to use in your story layer.</p>
+                <form name="importOptionsForm" class="form-horizontal import-options-form">
+                    <div style="padding-top: 10px" class="col-md-offset-9">
+                        <button class="btn btn-default btn-xs" ng-click="addDefaultSensor()"><i class="fa fa-plus-circle"></i> Add </button>
+                    </div>
+                    <div class="form-group" style="padding-top: 15px align: center">
+                        <label class="col-sm-4 col-xs-4 col-md-4 control-label">Service:</label>
+                        <input readonly ng-model="layer.hub.url" type="text" class="pull-left input-md">
+                    </div>
+                    <div class="form-group" style="padding-top: 15px" ng-repeat="sensor in selectedSensors">
+                        <div>
+                            <hr>
+                            <!-- Sensor Selection -->
+                            <label for="sensorName-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Sensor:</label>
+                            <select id="sensorName-{{$index}}" ng-model=sensor.offeringIdx class="col-md-4 col-xs-4 col-sm-4 input-md" ng-change="initUserTimes({{$index}})">
+                                <option value="" ng-selected="!sensor.offering">--Select a sensor--</option>
+                                <option ng-repeat="offering in offerings" ng-selected="sensor.offeringIdx === {{$index}}"
+                                    value="{{$index}}">{{ offering.name }}</option>
+                            </select>
+
+                            <!-- Property Selection -->
+                            <label for="sensorProperty-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Observable Property:</label>
+                            <select id="sensorProperty-{{$index}}" ng-model="sensor.observedProperty" class="col-md-4 col-xs-4 col-sm-4 input-md">
+                                <option value="" ng-selected="!sensor.observedProperty">--Select a property--</option>
+                                <option ng-repeat="property in offerings[sensor.offeringIdx].observable_props" ng-selected="sensor.observedProperty === property"
+                                    value="{{property}}">{{ property }}</option>
+                            </select>
+
+                            <!-- Sensor Description -->
+                            <label for="sensorDescription-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Description:</label>
+                            <textarea id="sensorDescription-{{$index}}" readonly class="col-sm-4 col-xs-4 col-md-4 form-control">{{offerings[sensor.offeringIdx].description}}</textarea>
+
+                            <!-- Time Range Description -->
+                            <label for="sensorStartTimeRange-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Time Range:</label> 
+                            <input id="sensorStartTimeRange-{{$index}}" readonly ng-model="offerings[sensor.offeringIdx].start_time" placeholder="YYYY-MM-DDTHH:mm:ssZ" 
+                                type="text" class="col-md-4 col-xs-4 col-sm-4 input-md">
+
+                            <label for="sensorEndTimeRange-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label"></label> 
+                            <input id="sensorEndTimeRange-{{$index}}" readonly ng-model="offerings[sensor.offeringIdx].end_time" placeholder="YYYY-MM-DDTHH:mm:ssZ" 
+                                type="text" class="col-md-4 col-xs-4 col-sm-4 input-md">
+
+                            <!-- User Time Range -->
+                            <label for="sensorUserStartTime-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Start Time:</label>
+                            <input id="sensorUserStartTime-{{$index}}" ng-model="sensor.user_start_time" 
+                                 placeholder="YYYY-MM-DDTHH:mm:ssZ" type="text" class="col-md-4 col-xs-4 col-sm-4 input-md">
+
+                            <label for="sensorUserEndTime-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">End Time:</label>
+                            <input id="sensorUserEndTime-{{$index}}" ng-model="sensor.user_end_time" 
+                                 placeholder="YYYY-MM-DDTHH:mm:ssZ" type="text" class="col-md-4 col-xs-4 col-sm-4 input-md">
+
+                            <!-- Sync MasterTime -->
+                            <label for="sensorSync-{{$index}}" class="col-sm-4 col-xs-4 col-md-4 control-label">Sync Master Time:</label>
+                            <input id="sensorSync-{{$index}}" type="checkbox" class="pull-left input-md" ng-model="sensor.syncMasterTime"-->
+                        </div>
+                        <div style="clear:left;">
+                            <a ng-click="removeSensor(sensor)" href="#">Remove this Selection</a>
+                        </div>
+                    </div>
+                    <div class="import-wizard-button">
+                        <button class="btn" type="submit" wz-next value="Continue">Continue <i class="fa fa-arrow-circle-right"></i></button>
+                    </div>
+                </form>
+            </wz-step>
+
+
+            <wz-step title="Create">
+                <h3><strong>Ok, we're ready to create the SensorLayer!</strong></h3>
+                <p>Click below to create your SensorLayer</p>
+                <div>
+                    <div class="clrs-green fnt-weight-400" ng-show="success">Your new SensorLayer<span ng-show="created_layers.length > 1">s are</span><span
+                            ng-show="created_layers.length > 1"> is</span> ready.
+                    </div>
+                    <div class="clrs-green fnt-weight-400" ng-repeat="created_layer in created_layers" ng-show="success">View the <a
+                            href="{{ created_layer.url }}?showMetadata=true" class="fnt-weight-600" target="_self">SensorLayer</a>.
+                    </div>
+                    <div class="clrs-red fnt-weight-400" ng-show="errors.length">SensorLayer creation has failed.</div>
+                    <div class="clrs-red fnt-weight-400" ng-repeat="error in errors" ng-show="errors.length"><span
+                            style="font-weight: 600">{{ error[0] }}:</span> {{ error[1] }}</div>
+                </div>
+                <div class="import-wizard-button">
+                    <i class="fa fa-spinner fa-spin fa-3x" ng-show="processing"></i>
+                    <button class="btn" ng-show="!processing && !success" type="submit" wz-next value="Continue">Create my SensorLayer <i
+                            class="fa fa-arrow-circle-right"></i></button>
+                </div>
+                <div>
+                    <ul class="import-wizard-error-list" ng-show="errorMessages">
+                        <li class="clrs-red" style="" ng-repeat="error in errorMessages">{{ error }}</li>
+                    </ul>
+                </div>
+            </wz-step>
+        </wizard>
+    </div>
+</div>
+<div class="modal-footer">
+    <span class="pull-left modal-footer-help"><button class="btn btn-primary" type="button" ng-click="ok()">Close</button></span>
+    <span class="pull-right modal-footer-help">Learn more about<a href="/getstarted" target="_blank">creating data.</a></span>
+</div>
+<!-- OSH_INTEG - END -->
+

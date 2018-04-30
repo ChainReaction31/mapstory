@@ -58,7 +58,7 @@
          store: {name: 'mapstory_geogig'},
          namespace: {'name': 'geonode'},
          configureTime: true,
-         editable: true
+         editable: true,
         }
       };
 
