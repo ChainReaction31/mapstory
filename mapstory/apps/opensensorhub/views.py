@@ -11,6 +11,7 @@ from django.http import HttpResponse, HttpResponseServerError
 
 from models import Hub
 from models import Observation
+from models import OSHLayer
 
 
 # Builds a sensor layer with the data contained in the request
@@ -32,39 +33,53 @@ def createSensorLayer(request):
 #	},
 #}
 
-	try:
-        	# Instantiate Hub Model
-		hub = Hub(url=requestData["layer"]["hub"]["url"])
-		offeringHub = hub
-
-	except KeyError:
-		# Error has occurred in reading request, send default response
-		errors=True
-		errorMessages.append("Malformed Request: Hub URL Missing")
-
-        # Instantiate Observation Model(s)
-	observations = []
+    containingLayer = ''
+    offeringHub = ''
+    observations = []
+    
+    try:
+        # Instantiate Hub Model
+        containingLayer = OSHLayer(name=requestData["layer"]["configuration_options"]["name"])
+    
+    except KeyError:
+        # Error has occurred in reading request, send default response
+        errors=True
+        errorMessages.append("Malformed Request: Layer name missing")
+        
+    try:
+        # Instantiate Hub Model
+        offeringHub = Hub(url=requestData["layer"]["hub"]["url"])
+    
+    except KeyError:
+        # Error has occurred in reading request, send default response
+        errors=True
+        errorMessages.append("Malformed Request: Hub URL Missing")
 
 	try:
 		sensorCollection = requestData["layer"]["sensors"]
 
-		for sensor in sensorCollection:
-			observation = Observation(hub=offeringHub, endpoint=sensor["endPointUrl"], offering=sensor["offeringId"],
-                                          observedProperty=sensor["observedProperty"], startTime=sensor["startTime"], 
-                                          endTime=sensor["endTime"], syncMasterTime=sensor["syncMasterTime"],
-                                          name=sensor["name"], sourceType=sensor["sourceType"])
+        # Instantiate Observation Model(s)
+        for sensor in sensorCollection:
+            observation = Observation(hub=offeringHub, layer=containingLayer, endpoint=sensor["endPointUrl"],
+                offering=sensor["offeringId"], observedProperty=sensor["observedProperty"],
+                startTime=sensor["startTime"], endTime=sensor["endTime"],
+                syncMasterTime=sensor["syncMasterTime"], name=sensor["name"],
+                sourceType=sensor["sourceType"])
+                                          
+            observations.append(observation)
 
 	except KeyError:
 		# Error has occurred in reading request, send default response
 		errors=True
-		errorMessages.append("Malformed Request: Malformed sensor observation data")
+		errorMessages.append("Malformed Request: Sensor observation data is incomplete or incorrect")
 
-	if errors:
-                return HttpResponse(json.dumps({'status': 'failure', 'errors': error_messages}), status=400,
+    if errors:
+        return HttpResponse(json.dumps({'status': 'failure', 'errors': error_messages}), status=400,
                                     content_type='application/json')
-	else:
-		response=""
-		return HttpResponse(response)
+
+    else:
+        return HttpResponse(json.dumps({'status': 'success', 'layer': containingLayer.name}), status=201,
+                                    content_type='application/json')
 
 
 # Processes request to retrieve capabilities from a Hub
