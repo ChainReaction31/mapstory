@@ -92,6 +92,7 @@ class Observation(models.Model):
 	        blank=True,
 	        null=True
 	    )
+
 	endpoint = models.URLField(max_length=200)
 	offering = models.CharField(max_length=200)
 	observedProperty = models.URLField(max_length=200)

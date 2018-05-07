@@ -153,7 +153,7 @@
 
     $scope.getHubOfferings = function (address) {
       $scope.errors = [];
-      $http.post('/opensensorhub/getCapabilities', {'hubAddress': $scope.layer.hub.url}).then(function(response) {
+      $http.post('/opensensorhub/get_capabilities', {'hubAddress': $scope.layer.hub.url}).then(function(response) {
         $scope.offerings = angular.fromJson(response.data.offerings);
       }, function(response){
         $scope.processing = false;

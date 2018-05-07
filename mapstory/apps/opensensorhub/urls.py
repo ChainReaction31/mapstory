@@ -7,7 +7,7 @@ from views import *
 app_name = 'opensensorhub'
 
 urlpatterns = patterns('.views',
-                       url(r'^getCapabilities$', getCapabilities, name='getCapabilities'),
-                       url(r'^layers/create$', createSensorLayer, name='createSensorLayer'),
+                       url(r'^get_capabilities$', get_capabilities, name='get_capabilities'),
+                       url(r'^layers/create$', create_sensor_layer, name='create_sensor_layer'),
                        )
 

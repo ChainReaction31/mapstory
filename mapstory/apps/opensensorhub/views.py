@@ -2,7 +2,7 @@
 
 import json
 import urllib2
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 import dateutil.parser
 
 from datetime import datetime
@@ -15,91 +15,81 @@ from models import OSHLayer
 
 
 # Builds a sensor layer with the data contained in the request
-def createSensorLayer(request):
+def create_sensor_layer(request):
 
-    if request.method == 'POST':
-        errors = False
-        errorMessages = []
+	if request.method == 'POST':
+		errors = False
+		error_messages = []
 
-	requestData = json.loads(request.body)
+		request_data = json.loads(request.body)
 
-#layer = {
-#	sensors: [],
-#       hub: {
-#           url,
-#       }
-#	configuration_options: {
-#	    editable: true,
-#	},
-#}
+		containing_layer = ''
+		offering_hub = ''
+		observations = []
 
-    containingLayer = ''
-    offeringHub = ''
-    observations = []
-    
-    try:
-        # Instantiate Hub Model
-        containingLayer = OSHLayer(name=requestData["layer"]["configuration_options"]["name"])
-    
-    except KeyError:
-        # Error has occurred in reading request, send default response
-        errors=True
-        errorMessages.append("Malformed Request: Layer name missing")
-        
-    try:
-        # Instantiate Hub Model
-        offeringHub = Hub(url=requestData["layer"]["hub"]["url"])
-    
-    except KeyError:
-        # Error has occurred in reading request, send default response
-        errors=True
-        errorMessages.append("Malformed Request: Hub URL Missing")
+		try:
+			# Instantiate Hub Model
+			containing_layer = OSHLayer(name=request_data["layer"]["configuration_options"]["name"])
 
-	try:
-		sensorCollection = requestData["layer"]["sensors"]
+		except KeyError:
+			# Error has occurred in reading request, send default response
+			errors=True
+			error_messages.append("Malformed Request: Layer name missing")
 
-        # Instantiate Observation Model(s)
-        for sensor in sensorCollection:
-            observation = Observation(hub=offeringHub, layer=containingLayer, endpoint=sensor["endPointUrl"],
-                offering=sensor["offeringId"], observedProperty=sensor["observedProperty"],
-                startTime=sensor["startTime"], endTime=sensor["endTime"],
-                syncMasterTime=sensor["syncMasterTime"], name=sensor["name"],
-                sourceType=sensor["sourceType"])
-                                          
-            observations.append(observation)
+		try:
+			# Instantiate Hub Model
+			offering_hub = Hub(url=request_data["layer"]["hub"]["url"])
 
-	except KeyError:
-		# Error has occurred in reading request, send default response
-		errors=True
-		errorMessages.append("Malformed Request: Sensor observation data is incomplete or incorrect")
+		except KeyError:
+			# Error has occurred in reading request, send default response
+			errors=True
+			error_messages.append("Malformed Request: Hub URL Missing")
 
-    if errors:
-        return HttpResponse(json.dumps({'status': 'failure', 'errors': error_messages}), status=400,
-                                    content_type='application/json')
+		try:
+			sensor_collection = request_data["layer"]["sensors"]
 
-    else:
-        return HttpResponse(json.dumps({'status': 'success', 'layer': containingLayer.name}), status=201,
-                                    content_type='application/json')
+			# Instantiate Observation Model(s)
+			for sensor in sensor_collection:
+				observation = Observation(hub=offering_hub, layer=containing_layer, endpoint=sensor["endPointUrl"],
+					offering=sensor["offeringId"], observedProperty=sensor["observedProperty"],
+					startTime=sensor["startTime"], endTime=sensor["endTime"],
+					syncMasterTime=sensor["syncMasterTime"], name=sensor["name"],
+					sourceType=sensor["sourceType"])
+
+				observations.append(observation)
+
+		except KeyError:
+			# Error has occurred in reading request, send default response
+			errors=True
+			error_messages.append("Malformed Request: Sensor observation data is incomplete or incorrect")
+
+		if errors:
+			return HttpResponse(json.dumps({'status': 'failure', 'errors': error_messages}), status=400,
+										content_type='application/json')
+
+		else:
+			return HttpResponse(json.dumps({'status': 'success', 'layer': containing_layer.name}), status=201,
+										content_type='application/json')
 
 
 # Processes request to retrieve capabilities from a Hub
-def getCapabilities(request):
+def get_capabilities(request):
 
-	getCapabilities = "/sos?service=SOS&version=2.0&request=GetCapabilities"
+	get_capabilities_req = "/sos?service=SOS&version=2.0&request=GetCapabilities"
 
 	response = "Malformed Request: Expecting URL of Open Sensor Hub - e.g. http://botts-geo.com:8181/sensorhub"
-	requestData = json.loads(request.body)
+	request_data = json.loads(request.body)
 
 	try:
 		# Append "sos?service=SOS&version=2.0&request=GetCapabilities" to get capabilities from OSH hub
-		hubUrl = requestData['hubAddress']
-		hubUrl = hubUrl + getCapabilities
+		hub_url = request_data['hubAddress']
+		hub_url = hub_url + get_capabilities_req
 
 		# Get capabilities from selected hub
-		capabilities = urllib2.urlopen(hubUrl).read()
+		capabilities = urllib2.urlopen(hub_url).read()
 
 		# Parse the cabalities
-		response = parseCapabilities(hubUrl, capabilities)
+		response = parse_capabilities(hub_url, capabilities)
 
 	except KeyError:
 		# Error has occurred in reading request, send default response
@@ -109,11 +99,11 @@ def getCapabilities(request):
 	return HttpResponse(response)
 
 # Parses the capabilities XML document provided by a Hub
-def parseCapabilities(serverUrl, capabilitiesXml):
+def parse_capabilities(server_url, capabilities_xml):
 
-	capabilities = {'serverUrl': serverUrl, 'offerings':[]}
+	capabilities = {'serverUrl': server_url, 'offerings':[]}
 
-	root = ET.fromstring(capabilitiesXml)
+	root = ElementTree.fromstring(capabilities_xml)
 
 	# Namespace dictionary to help make iterating over elements less verbose below
 	ns = { 'swes': 'http://www.opengis.net/swes/2.0',
@@ -131,42 +121,42 @@ def parseCapabilities(serverUrl, capabilitiesXml):
 		desc = offering.find('swes:description', ns)
 
 		# get all the info we need for the offering (name, desc, time range, etc.)
-		offeringInfo = {}
+		offering_info = {}
 
 		# Parse the begin time fields
 		for begin_time in offering.iterfind('*//gml:beginPosition', ns):
 			if begin_time.text is None:
-				offeringInfo['start_time'] = 'now'
-				offeringInfo['user_start_time'] = datetime.now()
+				offering_info['start_time'] = 'now'
+				offering_info['user_start_time'] = datetime.now()
 			else:
-				offeringInfo['start_time'] = begin_time.text.replace('T', ' ').replace('Z', '')
-				offeringInfo['user_start_time'] = dateutil.parser.parse(begin_time.text)
+				offering_info['start_time'] = begin_time.text.replace('T', ' ').replace('Z', '')
+				offering_info['user_start_time'] = dateutil.parser.parse(begin_time.text)
 
 		# Parse the end time fields
 		for end_time in offering.iterfind('*//gml:endPosition', ns):
 			if end_time.text is None:
-				offeringInfo['end_time'] = 'now'
-				offeringInfo['user_end_time'] = datetime.now()
+				offering_info['end_time'] = 'now'
+				offering_info['user_end_time'] = datetime.now()
 			else:
-				offeringInfo['end_time'] = end_time.text.replace('T', ' ').replace('Z', '')
-				offeringInfo['user_end_time'] = dateutil.parser.parse(end_time.text)
+				offering_info['end_time'] = end_time.text.replace('T', ' ').replace('Z', '')
+				offering_info['user_end_time'] = dateutil.parser.parse(end_time.text)
 
 		# Store the offering information
-		offeringInfo['name'] = name.text
-		offeringInfo['procedure_id'] = procedure_id.text
-		offeringInfo['offering_id'] = offering_id.text
-		offeringInfo['description'] = desc.text
-		offeringInfo['observable_props'] = []
-		#offeringInfo['selected_observable_props'] = ""
-		#offeringInfo['config_name'] = ""
-		offeringInfo['temp_enabled'] = False
+		offering_info['name'] = name.text
+		offering_info['procedure_id'] = procedure_id.text
+		offering_info['offering_id'] = offering_id.text
+		offering_info['description'] = desc.text
+		offering_info['observable_props'] = []
+		#offering_info['selected_observable_props'] = ""
+		#offering_info['config_name'] = ""
+		offering_info['temp_enabled'] = False
 
 		# Place each observable property into the offering
 		for observable_property in offering.findall('swes:observableProperty', ns):
-			offeringInfo['observable_props'].append(observable_property.text)
+			offering_info['observable_props'].append(observable_property.text)
 
 		# Add the offering into the list of offerings
-		capabilities['offerings'].append(offeringInfo)
+		capabilities['offerings'].append(offering_info)
 	
 	# Return a JSON structure representation of the dictionary, default=str is a brute force approach to serailize
 	# all elements as strings to avoid JSON serialization problems for objects in the structure
