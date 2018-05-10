@@ -1,0 +1,24 @@
+<!--OSH_INTEG-->
+{% extends "viewer/view_base.html" %}
+
+{% load i18n %}
+
+{% block title %} {% trans "Viewer" %} - {{ block.super }} {% endblock %}
+
+{% block head %}
+{{ block.super }}
+<link href="{{ STATIC_URL }}style/themes/{{THEME}}/site-theme.css" rel="stylesheet" />
+<link href="{{ STATIC_URL }}style/themes/{{THEME}}/maps-theme.css" rel="stylesheet" />
+{% endblock head %}
+
+{% block middle %}
+
+{% endblock %}
+
+{% block extra_script %}
+<script src="{{ STATIC_URL }}vendor/jquery/dist/jquery.min.js"></script>
+<script src="{{ STATIC_URL }}vendor/story-tools/dist/story-tools-vendor-all.js"></script>
+<script src="{{ STATIC_URL }}vendor/story-tools/dist/story-tools-core-all.js"></script>
+<script src="{{ STATIC_URL }}vendor/story-tools/dist/story-tools-mapstory.js"></script>
+{% include 'viewer/sensor_styler_viewer.js' %}
+{% endblock extra_script %}
