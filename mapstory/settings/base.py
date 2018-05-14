@@ -187,7 +187,7 @@ if DATABASE_PASSWORD:
             'PASSWORD': DATABASE_PASSWORD,
             'HOST': DATABASE_HOST,
             'PORT': '5432',
-        }
+        },
     }
 
     UPLOADER = {
