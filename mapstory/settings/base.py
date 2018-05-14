@@ -187,6 +187,14 @@ if DATABASE_PASSWORD:
             'PASSWORD': DATABASE_PASSWORD,
             'HOST': DATABASE_HOST,
             'PORT': '5432',
+        },
+        'opensensorhub': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'osh_data',
+            'USER': 'mapstory',
+            'PASSWORD': DATABASE_PASSWORD,
+            'HOST': DATABASE_HOST,
+            'PORT': '5432',
         }
     }
 

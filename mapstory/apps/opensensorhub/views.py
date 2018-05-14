@@ -29,7 +29,7 @@ def create_sensor_layer(request):
 
 		try:
 			# Instantiate Hub Model
-			containing_layer = OSHLayer(name=request_data["layer"]["configuration_options"]["name"])
+			containing_layer = OSHLayer.objects.create(name=request_data["layer"]["configuration_options"]["name"])
 
 		except KeyError:
 			# Error has occurred in reading request, send default response
@@ -38,7 +38,7 @@ def create_sensor_layer(request):
 
 		try:
 			# Instantiate Hub Model
-			offering_hub = Hub(url=request_data["layer"]["hub"]["url"])
+			offering_hub = Hub.objects.create(url=request_data["layer"]["hub"]["url"])
 
 		except KeyError:
 			# Error has occurred in reading request, send default response
@@ -50,7 +50,7 @@ def create_sensor_layer(request):
 
 			# Instantiate Observation Model(s)
 			for sensor in sensor_collection:
-				observation = Observation(hub=offering_hub, layer=containing_layer, endpoint=sensor["endPointUrl"],
+				observation = Observation.objects.create(hub=offering_hub, layer=containing_layer, endpoint=sensor["endPointUrl"],
 					offering=sensor["offeringId"], observedProperty=sensor["observedProperty"],
 					startTime=sensor["startTime"], endTime=sensor["endTime"],
 					syncMasterTime=sensor["syncMasterTime"], name=sensor["name"],
@@ -68,8 +68,14 @@ def create_sensor_layer(request):
 										content_type='application/json')
 
 		else:
+			# No errors have occurred, save the created objects to the OSH Database
+#			containing_layer.save(using='opensensorhub')
+#			offering_hub.save(using='opensensorhub')
+#			for observation in observations:
+#				observation.save(using='opensensorhub')
+
 			return HttpResponse(json.dumps({'status': 'success', 'layer': containing_layer.name}), status=201,
-										content_type='application/json')
+						content_type='application/json')
 
 
 # Processes request to retrieve capabilities from a Hub
