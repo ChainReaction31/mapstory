@@ -1,14 +1,16 @@
+from django.forms import ValidationError
 from django.db import models
+import json
 
 
 class ArrayField(models.Field):
     description = "A container for data to be used as arrays"
 
-    def __init__(self, *args, **kwargs):
-        super(ArrayField, self).__init__(*args, **kwargs)
+#    def __init__(self, *args, **kwargs):
+#        super(self).__init__(*args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(ArrayField, self).deconstruct()
         return name, path, args, kwargs
 
     def from_db_value(self, value, expression, connection):
@@ -29,11 +31,10 @@ class RgbField(ArrayField):
         super(RgbField, self).__init__(self, *args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(RgbField, self).deconstruct()
         del kwargs['max_length']
         return name, path, args, kwargs
 
-    @staticmethod
     def db_type(self, connection):
         return "RgbField"
 
@@ -58,13 +59,12 @@ class RgbField(ArrayField):
 
         return rgb_values
 
-    @staticmethod
     def get_prep_value(self, value):
 
         if len(value) != 3:
-            raise ValidationError("Invalid RGB value: length=" + len(value))
+            raise ValidationError("Invalid RGB value: length=" + str(len(value)))
 
-        return ''.join(json.dumps(value, separator(',')))
+        return ''.join(json.dumps(value, separators=','))
 
 
 class ThresholdField(ArrayField):
@@ -75,11 +75,10 @@ class ThresholdField(ArrayField):
         super(ThresholdField, self).__init__(self, *args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(ThresholdField, self).deconstruct()
         del kwargs['max_length']
         return name, path, args, kwargs
 
-    @staticmethod
     def db_type(self, connection):
         return "ThresholdField"
 
@@ -100,7 +99,7 @@ class IntThresholdField(ThresholdField):
         super(IntThresholdField, self).__init__(self, *args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(IntThresholdField, self).deconstruct()
         return name, path, args, kwargs
 
     def db_type(self, connection):
@@ -127,13 +126,12 @@ class IntThresholdField(ThresholdField):
 
         return range_values
 
-    @staticmethod
     def get_prep_value(self, value):
 
         if len(value) != 2:
-            raise ValidationError("Invalid Threshold value: length=" + len(value))
+            raise ValidationError("Invalid Threshold value: length=" + str(len(value)))
 
-        return ''.join(json.dumps(value, separator(',')))
+        return ''.join(json.dumps(value, separators=','))
 
 
 class FloatThresholdField(ThresholdField):
@@ -143,10 +141,9 @@ class FloatThresholdField(ThresholdField):
         super(FloatThresholdField, self).__init__(self, *args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(FloatThresholdField, self).deconstruct()
         return name, path, args, kwargs
 
-    @staticmethod
     def db_type(self, connection):
         return "DoubleThresholdField"
 
@@ -171,13 +168,12 @@ class FloatThresholdField(ThresholdField):
 
         return range_values
 
-    @staticmethod
     def get_prep_value(self, value):
 
         if len(value) != 2:
-            raise ValidationError("Invalid Threshold value: length=" + len(value))
+            raise ValidationError("Invalid Threshold value: length=" + str(len(value)))
 
-        return ''.join(json.dumps(value, separator(',')))
+        return ''.join(json.dumps(value, separators=','))
 
 
 class ThresholdArrayField(ArrayField):
@@ -187,10 +183,9 @@ class ThresholdArrayField(ArrayField):
         super(ThresholdArrayField, self).__init__(self, *args, **kwargs)
 
     def deconstruct(self):
-        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        name, path, args, kwargs = super(ThresholdArrayField, self).deconstruct()
         return name, path, args, kwargs
 
-    @staticmethod
     def db_type(self, connection):
         return "ThresholdArrayField"
 
@@ -215,11 +210,10 @@ class ThresholdArrayField(ArrayField):
 
         return None
 
-    @staticmethod
     def get_prep_value(self, value):
 
         if len(value) == 0:
-            raise ValidationError("Invalid Threshold value: length=" + len(value))
+            raise ValidationError("Invalid Threshold value: length=" + str(len(value)))
 
         # TODO: Need to implement
 
