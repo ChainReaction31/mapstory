@@ -1,231 +1,226 @@
 from django.db import models
 
-class ArrayField(models.Field)
 
-	description = "A container for data to be used as arrays"
+class ArrayField(models.Field):
+    description = "A container for data to be used as arrays"
 
-	def __init__(self, *args, **kwargs):
-		super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ArrayField, self).__init__(*args, **kwargs)
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		return name, path, args, kwargs
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        return name, path, args, kwargs
 
-	def from_db_value(self, value, expression, connection):
-		pass
+    def from_db_value(self, value, expression, connection):
+        pass
 
-	def to_python(self, value):
-		pass
+    def to_python(self, value):
+        pass
 
-	class Meta:
-		abstract = True
+    class Meta:
+        abstract = True
 
-class RgbField(ArrayField)
 
-	description = "An array containing the integer values for RGB color definition"
+class RgbField(ArrayField):
+    description = "An array containing the integer values for RGB color definition"
 
-	def __init__(self, *, **kwargs):
-		kwargs['max_length'] = 3
-		kwargs['db_name'] = "rgb_color"
-		super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = 3
+        super(RgbField, self).__init__(self, *args, **kwargs)
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		del kwargs['max_length']
-		del kwargs['db_name']
-		return name, path, args, kwargs
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        del kwargs['max_length']
+        return name, path, args, kwargs
 
-	def db_type(self, connection)
-		return "RgbField"
+    @staticmethod
+    def db_type(self, connection):
+        return "RgbField"
 
+    def from_db_value(self, value, expression, connection):
 
-	def from_db_value(self, value, expression, connection):
+        if value is None:
+            return value
 
-		if value is None:
-			return value
+        rgb_values = [int(x) for x in value.split(",")]
 
-		rgbValues = [int(x) for x in value.split(",")]
+        return rgb_values
 
-		return rgbValues
+    def to_python(self, value):
 
-	def to_python(self, value):
+        if value is None:
+            return value
 
-		if value is None:
-			return value
+        if isinstance(value, list):
+            return value
 
-		if isinstance(value, list):
-			return value
-		
-		rgbValues = [int(x) for x in value.split(",")]
+        rgb_values = [int(x) for x in value.split(",")]
 
+        return rgb_values
 
-		return rgbValues
+    @staticmethod
+    def get_prep_value(self, value):
 
-	def get_prep_value(self, value):
+        if len(value) != 3:
+            raise ValidationError("Invalid RGB value: length=" + len(value))
 
-		if len(value) != 3:
-			raise ValidationError("Invalid RGB value: length=" + len(value))
-		
-		return ''.join(json.dumps(values, separator(','))
+        return ''.join(json.dumps(value, separator(',')))
 
-class ThresholdField(ArrayField)
 
-	description = "Container for value pairs as (min, max)"
-	
-	def __init__(self, *args, **kwargs):
-		kwargs['max_length'] = 2
-		super().__init__(*args, **kwargs)
+class ThresholdField(ArrayField):
+    description = "Container for value pairs as (min, max)"
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		del kwargs['max_length']
-		return name, path, args, kwargs
+    def __init__(self, *args, **kwargs):
+        kwargs['max_length'] = 2
+        super(ThresholdField, self).__init__(self, *args, **kwargs)
 
-	def db_type(self, connection)
-		return "ThresholdField"
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        del kwargs['max_length']
+        return name, path, args, kwargs
 
-	def from_db_value(self, value, expression, connection):
-		pass
+    @staticmethod
+    def db_type(self, connection):
+        return "ThresholdField"
 
-	def to_python(self, value):
-		pass
+    def from_db_value(self, value, expression, connection):
+        pass
 
-	class Meta:
-		abstract = True
+    def to_python(self, value):
+        pass
 
-class IntThresholdField(ThresholdField)
+    class Meta:
+        abstract = True
 
-	description = "Container for integer value pairs as (min, max)"
-	
-	def __init__(self, *args, **kwargs):		
-		kwargs['db_name'] = "threshold_as_int"
-		super().__init__(*args, **kwargs)
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		del kwargs['db_name']
-		return name, path, args, kwargs
+class IntThresholdField(ThresholdField):
+    description = "Container for integer value pairs as (min, max)"
 
-	def db_type(self, connection)
-		return "IntThresholdField"
+    def __init__(self, *args, **kwargs):
+        super(IntThresholdField, self).__init__(self, *args, **kwargs)
 
-	def from_db_value(self, value, expression, connection):
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        return name, path, args, kwargs
 
-		if value is None:
-			return value
+    def db_type(self, connection):
+        return "IntThresholdField"
 
-		rangeValues = [int(x) for x in value.split(",")]
+    def from_db_value(self, value, expression, connection):
 
-		return rangeValues
+        if value is None:
+            return value
 
-	def to_python(self, value):
+        range_values = [int(x) for x in value.split(",")]
 
-		if value is None:
-			return value
+        return range_values
 
-		if isinstance(value, list):
-			return value
-		
-		rangeValues = [int(x) for x in value.split(",")]
+    def to_python(self, value):
 
+        if value is None:
+            return value
 
-		return rangeValues
+        if isinstance(value, list):
+            return value
 
-	def get_prep_value(self, value):
+        range_values = [int(x) for x in value.split(",")]
 
-		if len(value) != 2:
-			raise ValidationError("Invalid Threshold value: length=" + len(value))
-		
-		return ''.join(json.dumps(value, separator(','))
+        return range_values
 
-class FloatThresholdField(ThresholdField)
+    @staticmethod
+    def get_prep_value(self, value):
 
-	description = "Container for floating point precision value pairs as (min, max)"
-	
-	def __init__(self, *args, **kwargs):	
-		kwargs['db_name'] = "threshold_as_float"
-		super().__init__(*args, **kwargs)
+        if len(value) != 2:
+            raise ValidationError("Invalid Threshold value: length=" + len(value))
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		del kwargs['db_name']
-		return name, path, args, kwargs
+        return ''.join(json.dumps(value, separator(',')))
 
-	def db_type(self, connection)
-		return "DoubleThresholdField"
 
-	def from_db_value(self, value, expression, connection):
+class FloatThresholdField(ThresholdField):
+    description = "Container for floating point precision value pairs as (min, max)"
 
-		if value is None:
-			return value
+    def __init__(self, *args, **kwargs):
+        super(FloatThresholdField, self).__init__(self, *args, **kwargs)
 
-		rangeValues = [int(x) for x in value.split(",")]
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        return name, path, args, kwargs
 
-		return rangeValues
+    @staticmethod
+    def db_type(self, connection):
+        return "DoubleThresholdField"
 
-	def to_python(self, value):
+    def from_db_value(self, value, expression, connection):
 
-		if value is None:
-			return value
+        if value is None:
+            return value
 
-		if isinstance(value, list):
-			return value
-		
-		rangeValues = [float(x) for x in value.split(",")]
+        range_values = [float(x) for x in value.split(",")]
 
+        return range_values
 
-		return rangeValues
+    def to_python(self, value):
 
-	def get_prep_value(self, value):
+        if value is None:
+            return value
 
-		if len(value) != 2:
-			raise ValidationError("Invalid Threshold value: length=" + len(value))
-		
-		return ''.join(json.dumps(value, separator(','))
+        if isinstance(value, list):
+            return value
 
-class ThresholdArrayField(ArrayField)
+        range_values = [float(x) for x in value.split(",")]
 
-	description = "An array containing threshold values"
+        return range_values
 
-	def __init__(self, *, **kwargs):
-		kwargs['db_name'] = "thresholds"
-		super().__init__(*args, **kwargs)
+    @staticmethod
+    def get_prep_value(self, value):
 
-	def deconstruct(self):
-		name, path, args, kwargs = super().deconstruct()
-		del kwargs['db_name']
-		return name, path, args, kwargs
+        if len(value) != 2:
+            raise ValidationError("Invalid Threshold value: length=" + len(value))
 
-	def db_type(self, connection)
-		return "ThresholdArrayField"
+        return ''.join(json.dumps(value, separator(',')))
 
-	def from_db_value(self, value, expression, connection):
 
-		if value is None:
-			return value
+class ThresholdArrayField(ArrayField):
+    description = "An array containing threshold values"
 
-		rangeValues = [int(x) for x in value.split(",")]
+    def __init__(self, array_field, *args, **kwargs):
+        super(ThresholdArrayField, self).__init__(self, *args, **kwargs)
 
-		return rangeValues
+    def deconstruct(self):
+        name, path, args, kwargs = super(ChildB, self).deconstruct()
+        return name, path, args, kwargs
 
-	def to_python(self, value):
+    @staticmethod
+    def db_type(self, connection):
+        return "ThresholdArrayField"
 
-		if value is None:
-			return value
+    def from_db_value(self, value, expression, connection):
 
-		if isinstance(value, list):
-			return value
-		
-		# TODO: Need to implement
+        if value is None:
+            return value
 
-		return None
+        range_values = [int(x) for x in value.split(",")]
 
-	def get_prep_value(self, value):
+        return range_values
 
-		if len(value) == 0:
-			raise ValidationError("Invalid Threshold value: length=" + len(value))
+    def to_python(self, value):
 
-		# TODO: Need to implement
+        if value is None:
+            return value
 
-		return None
+        if isinstance(value, list):
+            return value
 
+        # TODO: Need to implement
+
+        return None
+
+    @staticmethod
+    def get_prep_value(self, value):
+
+        if len(value) == 0:
+            raise ValidationError("Invalid Threshold value: length=" + len(value))
+
+        # TODO: Need to implement
+
+        return None
