@@ -1,11 +1,12 @@
 # OSH_INTEG
 
-from fields import RgbField
-from fields import ThresholdArrayField
-from fields import IntThresholdField
+#from fields import RgbField
+#from fields import ThresholdArrayField
+#from fields import IntThresholdField
 
 from django.db import models
 from django.core import validators
+#from django.contrib.postgres.fields import ArrayField
 
 COLOR_MODE_CHOICES = (
     ('0', 'FIXED'),
@@ -54,8 +55,10 @@ class Styler(models.Model):
 class TextStyler(Styler):
     location = models.CharField(max_length=200)
     color_mode = models.CharField(max_length=1, choices=COLOR_MODE_CHOICES, default='0')
-    color_rgb = RgbField()
-    thresholds = ThresholdArrayField(IntThresholdField())
+    #    color_rgb = RgbField()
+#    color_rgb = ArrayField(models.IntegerField, size=3)
+    #    thresholds = ThresholdArrayField(IntThresholdField())
+#    thresholds = ArrayField(ArrayField(models.IntegerField), size=2)
 
 
 # ------------------------------------------------------------------------------
@@ -89,12 +92,14 @@ class ChartStyler(Styler):
     label_x = models.CharField(max_length=200)
     label_y = models.CharField(max_length=200)
     color_mode = models.CharField(max_length=1, choices=COLOR_MODE_CHOICES, default='0')
-    color_rgb = RgbField()
+#    color_rgb = RgbField()
+#    color_rgb = ArrayField(models.IntegerField, size=3)
     range_mode = models.CharField(max_length=1, choices=RANGE_MODE_CHOICES, default='0')
     range_x = models.FloatField()
     range_y = models.FloatField()
     max_points = models.IntegerField()
-    thresholds = ThresholdArrayField(IntThresholdField())
+    #    thresholds = ThresholdArrayField(IntThresholdField())
+#    thresholds = ArrayField(ArrayField(models.IntegerField), size=2)
 
 
 # ------------------------------------------------------------------------------
