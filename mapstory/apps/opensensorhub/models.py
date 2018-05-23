@@ -1,12 +1,7 @@
 # OSH_INTEG
 
-#from fields import RgbField
-#from fields import ThresholdArrayField
-#from fields import IntThresholdField
-
 from django.db import models
 from django.core import validators
-#from django.contrib.postgres.fields import ArrayField
 
 COLOR_MODE_CHOICES = (
     ('0', 'FIXED'),
@@ -20,9 +15,26 @@ COLOR_MODE_CHOICES = (
 #
 # Model representing an OSH View
 # ------------------------------------------------------------------------------
-class View(models.Model):
+class OshModel(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
+    description = models.CharField(max_length=200)
+    keywords = models.CharField(max_length=200)
+
+    class Meta:
+        abstract = True
+
+
+
+# ------------------------------------------------------------------------------
+# View
+#
+# Model representing an OSH View
+# ------------------------------------------------------------------------------
+#class View(models.Model):
+class View(OshModel):
+#    id = models.AutoField(primary_key=True)
+#    name = models.CharField(max_length=200)
     sensor_archetype = models.CharField(max_length=200)
 
 
@@ -31,9 +43,10 @@ class View(models.Model):
 #
 # Model representing an OSH Styler
 # ------------------------------------------------------------------------------
-class Styler(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=200)
+class Styler(OshModel):
+#class Styler(models.Model):
+#    id = models.AutoField(primary_key=True)
+#    name = models.CharField(max_length=200)
     timeout = models.IntegerField()
     styler_type = models.CharField(max_length=200)
     view = models.ForeignKey(
@@ -55,10 +68,10 @@ class Styler(models.Model):
 class TextStyler(Styler):
     location = models.CharField(max_length=200)
     color_mode = models.CharField(max_length=1, choices=COLOR_MODE_CHOICES, default='0')
-    #    color_rgb = RgbField()
-#    color_rgb = ArrayField(models.IntegerField, size=3)
-    #    thresholds = ThresholdArrayField(IntThresholdField())
-#    thresholds = ArrayField(ArrayField(models.IntegerField), size=2)
+    # Treat these strings as arrays of integers, will need to be converted to arrays when read
+    # and strings when stored
+    color_rgb = models.CharField(max_length=200)
+    thresholds = models.CharField(max_length=200)
 
 
 # ------------------------------------------------------------------------------
@@ -92,14 +105,14 @@ class ChartStyler(Styler):
     label_x = models.CharField(max_length=200)
     label_y = models.CharField(max_length=200)
     color_mode = models.CharField(max_length=1, choices=COLOR_MODE_CHOICES, default='0')
-#    color_rgb = RgbField()
-#    color_rgb = ArrayField(models.IntegerField, size=3)
     range_mode = models.CharField(max_length=1, choices=RANGE_MODE_CHOICES, default='0')
     range_x = models.FloatField()
     range_y = models.FloatField()
     max_points = models.IntegerField()
-    #    thresholds = ThresholdArrayField(IntThresholdField())
-#    thresholds = ArrayField(ArrayField(models.IntegerField), size=2)
+    # Treat these strings as arrays of integers, will need to be converted to arrays when read
+    # and strings when stored
+    color_rgb = models.CharField(max_length=200)
+    thresholds = models.CharField(max_length=200)
 
 
 # ------------------------------------------------------------------------------
@@ -120,9 +133,11 @@ class VideoView(Styler):
 #
 # Model representing an OSH Layer
 # ------------------------------------------------------------------------------
-class OSHLayer(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=200)
+#class OSHLayer(models.Model):
+class OSHLayer(OshModel):
+#    id = models.AutoField(primary_key=True)
+#    name = models.CharField(max_length=200)
+    pass
 
 
 # ------------------------------------------------------------------------------
@@ -130,7 +145,9 @@ class OSHLayer(models.Model):
 #
 # Model representation for an OpenSensorHub Instance
 # ------------------------------------------------------------------------------
-class Hub(models.Model):
+#class Hub(models.Model):
+class Hub(OshModel):
+
     PROTOCOL_TYPE_CHOICES = (
         ('0', 'HTTP'),
         ('1', 'HTTPS'),
@@ -138,7 +155,7 @@ class Hub(models.Model):
         ('3', 'WSS'),
     )
 
-    id = models.AutoField(primary_key=True)
+#    id = models.AutoField(primary_key=True)
     url = models.URLField(max_length=200)
     protocol = models.CharField(max_length=1, choices=PROTOCOL_TYPE_CHOICES, default='2')
 
@@ -161,7 +178,7 @@ class SweService(models.Model):
 #
 # Model representation for OSH Observations
 # ------------------------------------------------------------------------------
-class Observation(SweService):
+class Observation(OshModel, SweService):
     PROTOCOL_TYPE_CHOICES = (
         ('0', 'HTTP'),
         ('1', 'HTTPS'),
@@ -177,7 +194,7 @@ class Observation(SweService):
         ('4', 'QUAD'),
     )
 
-    id = models.AutoField(primary_key=True)
+#    id = models.AutoField(primary_key=True)
     hub = models.ForeignKey(Hub, on_delete=models.CASCADE)
     layer = models.ForeignKey(OSHLayer)
     view = models.ForeignKey(
@@ -196,7 +213,7 @@ class Observation(SweService):
     buffering_time = models.IntegerField(validators=[validators.MinValueValidator(0)])
     time_shift = models.IntegerField()
     source_type = models.CharField(max_length=200)
-    name = models.CharField(max_length=200)
+#    name = models.CharField(max_length=200)
     replay_speed = models.CharField(max_length=1, choices=REPLAY_SPEED_CHOICES, default='2')
     service = models.IntegerField(default=SweService.SOS, validators=[validators.MinValueValidator(SweService.SOS),
                                                                       validators.MaxValueValidator(SweService.SOS)])
